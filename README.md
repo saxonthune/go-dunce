@@ -24,9 +24,9 @@ enough. To use the Anthropic API instead, pass `--llm anthropic-api` and set
 ## Use
 
 ```sh
-.venv/bin/go-dunce https://online-go.com/review/<id> https://online-go.com/game/<id>
-.venv/bin/go-dunce --all            # every game already downloaded
-.venv/bin/go-dunce --all --until render   # engine work only, no LLM calls
+.venv/bin/go-dunce run https://online-go.com/review/<id> https://online-go.com/game/<id>
+.venv/bin/go-dunce run --all                  # every game already downloaded
+.venv/bin/go-dunce run --all --until select   # engine work only, no LLM calls
 ```
 
 For a review, the review's owner is taken to be the learner. For a game, pass
@@ -34,6 +34,15 @@ For a review, the review's owner is taken to be the learner. For a game, pass
 
 Results go to `output/report.md` (the study plan) and `output/<game>/review.md`
 (each game's mistakes with boards and explanations).
+
+Three more commands support reviewing games in conversation with an agent:
+
+- `go-dunce inspect <game> --boards 12,29` prints each move's points lost and
+  the engine's choice, and draws the board after the listed moves.
+- `go-dunce comment <game> <draft.json>` stores an agent's commentary on a game
+  (`GameCommentary` in the contracts).
+- `go-dunce history` prints all stored commentary, oldest game first, so a new
+  agent can see where the learner is. See `AGENTS.md`.
 
 ## Steps and contracts
 

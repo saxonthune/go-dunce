@@ -129,3 +129,29 @@ def test_runner_reuses_current_outputs_and_redoes_a_swapped_step(tmp_path: Path)
     steps, second = fake_steps("ascii/2")
     Runner(steps, ws, Step.RENDER, force=False, log=lambda _: None).run(["g1"])
     assert [second[k].calls for k in ("parse", "analyze", "render")] == [0, 0, 1]
+
+
+def test_commentary_round_trip_orders_games_oldest_first(tmp_path: Path):
+    import json
+
+    from go_dunce import commentary
+
+    for game_id in ("ogs-91159108", "ogs-9106291"):
+        (tmp_path / game_id).mkdir()
+        draft = tmp_path / f"{game_id}.draft.json"
+        draft.write_text(json.dumps({
+            "author": "test", "summary": "s", "player_level": "l", "themes": ["shape"],
+            "key_moments": [{"move_number": 3, "note": "n"}],
+        }))
+        commentary.save(tmp_path, game_id, draft)
+
+    assert [c.game_id for c in commentary.load_all(tmp_path)] == ["ogs-9106291", "ogs-91159108"]
+
+
+def test_commentary_requires_an_analyzed_game(tmp_path: Path):
+    from go_dunce import commentary
+
+    draft = tmp_path / "d.json"
+    draft.write_text('{"author": "t", "summary": "s", "player_level": "l", "themes": [], "key_moments": []}')
+    with pytest.raises(FileNotFoundError):
+        commentary.save(tmp_path, "ogs-1", draft)

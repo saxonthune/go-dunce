@@ -8,6 +8,7 @@ shape changes incompatibly.
 
 from __future__ import annotations
 
+from datetime import date
 from enum import Enum
 from typing import Literal
 
@@ -209,3 +210,24 @@ class StudyPlan(StepOutput):
     tallies: list[ThemeTally] = Field(description="Sorted by points lost, largest first.")
     overview: str
     study_items: list[StudyItem]
+
+
+# --- commentary (written by an agent reviewing a game, not by the runner) ---
+
+
+class KeyMoment(Contract):
+    move_number: int
+    note: str
+
+
+class GameCommentary(Contract):
+    contract: Literal["game-commentary/1"] = "game-commentary/1"
+    game_id: str
+    author: str = Field(description="The agent and model that wrote this, e.g. 'Claude Code (claude-opus-5-5)'.")
+    written_on: date
+    summary: str = Field(description="What decided the game, in a few sentences.")
+    player_level: str = Field(
+        description="What this game shows about the learner's current level, including change since earlier games."
+    )
+    themes: list[Theme] = Field(description="The learner's weaknesses shown in this game, most costly first.")
+    key_moments: list[KeyMoment]
