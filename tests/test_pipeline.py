@@ -136,7 +136,7 @@ def test_commentary_round_trip_orders_games_oldest_first(tmp_path: Path):
 
     from go_dunce import commentary
 
-    for game_id in ("ogs-91159108", "ogs-9106291"):
+    for game_id in ("ogs-12345678", "ogs-9876543"):
         (tmp_path / game_id).mkdir()
         draft = tmp_path / f"{game_id}.draft.json"
         draft.write_text(json.dumps({
@@ -145,7 +145,7 @@ def test_commentary_round_trip_orders_games_oldest_first(tmp_path: Path):
         }))
         commentary.save(tmp_path, game_id, draft)
 
-    assert [c.game_id for c in commentary.load_all(tmp_path)] == ["ogs-9106291", "ogs-91159108"]
+    assert [c.game_id for c in commentary.load_all(tmp_path)] == ["ogs-9876543", "ogs-12345678"]
 
 
 def test_commentary_requires_an_analyzed_game(tmp_path: Path):

@@ -44,7 +44,7 @@ def main() -> None:
     run.add_argument("--model", help="model for the LLM backend")
 
     look = commands.add_parser("inspect", help="print an analyzed game's move table and boards")
-    look.add_argument("game_id", help="e.g. ogs-91159108")
+    look.add_argument("game_id", help="e.g. ogs-12345678")
     look.add_argument("--boards", default="", help="comma-separated move counts to draw the board after, e.g. 8,16,29")
 
     comment = commands.add_parser("comment", help="store an agent's commentary on an analyzed game")

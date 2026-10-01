@@ -14,7 +14,8 @@ learner already knows and which advice has already been given.
 
 1. `.venv/bin/go-dunce run game:<id> --player <OGS username> --until select`
    runs the engine steps without LLM calls. The learner's username is in any
-   earlier `output/*/game.json` (the side named by `player`).
+   earlier `output/*/game.json` (the side named by `player`). If `output/` holds
+   no games yet, ask the learner for their OGS username.
 2. `.venv/bin/go-dunce inspect ogs-<id> --boards 12,29` prints every move with
    points lost and the engine's choice, then the board after each listed move,
    with every chain that has two liberties or fewer.
