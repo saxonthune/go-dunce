@@ -9,6 +9,12 @@ KataGo decides which moves were mistakes and what should have been played. The
 LLM only explains the engine's findings and groups them into themes, because
 LLMs misread Go positions when they work from the board alone.
 
+You can also open a coding agent such as Claude Code in this repo and ask about
+a game directly:
+
+> Read my game at https://online-go.com/game/12345678. Was the bottom group
+> alive after move 44?
+
 ## Setup
 
 ```sh
