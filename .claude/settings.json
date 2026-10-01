@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv/bin/go-dunce:*)",
+      "Bash(.venv/bin/pytest:*)",
+      "Bash(scripts/install-katago.sh:*)"
+    ]
+  }
+}
