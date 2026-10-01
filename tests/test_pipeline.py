@@ -1,6 +1,9 @@
+import shlex
+import sys
 from pathlib import Path
 
 import pytest
+from pydantic import BaseModel
 
 from go_dunce.board import Board, IllegalMove
 from go_dunce.contracts import (
@@ -16,6 +19,7 @@ from go_dunce.contracts import (
     SourceGame,
 )
 from go_dunce.coords import from_gtp, to_gtp
+from go_dunce.llm import Harness, Part
 from go_dunce.pipeline import Runner, Step, Steps, Workspace
 from go_dunce.stages.render_ascii import AsciiRenderer
 from go_dunce.stages.select_threshold import ThresholdSelector
@@ -146,6 +150,33 @@ def test_commentary_round_trip_orders_games_oldest_first(tmp_path: Path):
         commentary.save(tmp_path, game_id, draft)
 
     assert [c.game_id for c in commentary.load_all(tmp_path)] == ["ogs-9876543", "ogs-12345678"]
+
+
+FAKE_HARNESS = """\
+import json, sys
+request = json.load(sys.stdin)
+if request["system"] == "fail":
+    sys.exit("refused")
+json.dump({"system": request["system"], "parts": len(request["parts"]), "schema_title": request["schema"]["title"]}, sys.stdout)
+"""
+
+
+class Echo(BaseModel):
+    system: str
+    parts: int
+    schema_title: str
+
+
+def test_harness_sends_the_request_and_validates_the_reply(tmp_path: Path):
+    script = tmp_path / "fake.py"
+    script.write_text(FAKE_HARNESS)
+    harness = Harness(f"{shlex.quote(sys.executable)} {shlex.quote(str(script))}")
+
+    reply = harness.generate("coach", [Part("text/plain", "a"), Part("text/plain", "b")], Echo)
+    assert reply == Echo(system="coach", parts=2, schema_title="Echo")
+
+    with pytest.raises(RuntimeError, match="refused"):
+        harness.generate("fail", [], Echo)
 
 
 def test_commentary_requires_an_analyzed_game(tmp_path: Path):

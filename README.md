@@ -20,9 +20,12 @@ python3 -m venv .venv
 scripts/install-katago.sh          # OpenCL build; BACKEND=eigenavx2 for CPU only
 ```
 
-The default LLM backend runs the `claude` CLI, so a Claude subscription is
-enough. To use the Anthropic API instead, pass `--llm anthropic-api` and set
-`ANTHROPIC_API_KEY`.
+The explain and summarize steps send their LLM requests to a harness: a
+command that `run --harness` names (see [Writing a harness](#writing-a-harness)).
+The default, `harnesses/claude_cli.py`, runs the `claude` CLI, so a Claude
+subscription is enough. To use the Anthropic API instead, install the `api`
+extra, set `ANTHROPIC_API_KEY`, and pass
+`--harness ".venv/bin/python harnesses/anthropic_api.py"`.
 
 ## Use
 
@@ -76,12 +79,40 @@ Engine scores and winrates are always from Black's side.
 Write a class that satisfies the step's protocol and register it in
 `src/go_dunce/cli.py` (`RENDERERS`, `EXPLAINERS`, `SUMMARIZERS`). For example,
 an image renderer would return `RenderedPosition`s with
-`media_type="image/png"` and base64 `content`. The `anthropic-api` backend
-already sends image parts to the model; the `claude-cli` backend accepts text
-only.
+`media_type="image/png"` and base64 `content`. The `anthropic_api.py` harness
+already sends image parts to the model; `claude_cli.py` accepts text only.
 
 The explainer's themes come from the fixed `Theme` list in the contracts, so
 the summary step can count them across games.
+
+### Writing a harness
+
+A harness is any executable, in any language. go-dunce runs it once per LLM
+request, writes one JSON object to its standard input, and reads one JSON
+object from its standard output.
+
+The request:
+
+```json
+{
+  "system": "the system prompt",
+  "parts": [{"media_type": "text/plain", "content": "..."}],
+  "schema": {"description": "a JSON Schema"}
+}
+```
+
+Each `parts` entry is text (`text/plain` or `text/markdown`), or base64 image
+data with an `image/*` media type. A harness that can't handle a part type
+should fail rather than drop it.
+
+The reply is a single JSON object that matches `schema`. go-dunce validates it,
+so a harness without built-in schema support can include the schema in the
+prompt instead. On failure, the harness exits non-zero and writes the reason to
+standard error.
+
+Pass the command, with any arguments, to `run --harness`, for example
+`--harness "harnesses/claude_cli.py --model opus"`. The command is recorded
+in `produced_by`, so changing it redoes the explain and summarize steps.
 
 ## Layout
 

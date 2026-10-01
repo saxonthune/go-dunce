@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import shlex
 from pathlib import Path
 
 from . import commentary
 from .inspect_game import inspect
-from .llm import BACKENDS
+from .llm import Harness
 from .pipeline import Runner, Step, Steps, Workspace
 from .stages.analyze_katago import KataGoAnalyzer
 from .stages.explain_coach import CoachExplainer
@@ -40,8 +41,11 @@ def main() -> None:
     run.add_argument("--renderer", choices=RENDERERS, default="ascii")
     run.add_argument("--explainer", choices=EXPLAINERS, default="coach")
     run.add_argument("--summarizer", choices=SUMMARIZERS, default="coach")
-    run.add_argument("--llm", choices=BACKENDS, default="claude-cli")
-    run.add_argument("--model", help="model for the LLM backend")
+    run.add_argument(
+        "--harness",
+        default=shlex.quote(str(ROOT / "harnesses" / "claude_cli.py")),
+        help='command that answers LLM requests, e.g. "harnesses/claude_cli.py --model opus"; see the README',
+    )
 
     look = commands.add_parser("inspect", help="print an analyzed game's move table and boards")
     look.add_argument("game_id", help="e.g. ogs-12345678")
@@ -75,7 +79,7 @@ def _run(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
 
     until = Step(args.until)
     needs_llm = list(Step).index(until) >= list(Step).index(Step.EXPLAIN)
-    llm = BACKENDS[args.llm](args.model) if needs_llm else None
+    llm = Harness(args.harness) if needs_llm else None
     args.input_dir.mkdir(exist_ok=True)
     args.output_dir.mkdir(exist_ok=True)
 
