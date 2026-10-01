@@ -84,3 +84,7 @@ the summary step can count them across games.
 
 `input/`, `output/`, and `engines/` are gitignored. Downloaded games stay in
 `input/` so they remain available if they leave OGS.
+
+## License
+
+[GNU Affero General Public License v3.0](LICENSE) or later.

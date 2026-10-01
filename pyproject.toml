@@ -3,6 +3,8 @@ name = "go-dunce"
 version = "0.1.0"
 description = "Pull Go games from OGS, find mistakes with KataGo, and have an LLM explain them."
 requires-python = ">=3.10"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
 dependencies = [
     "anthropic",
     "httpx>=0.27",
